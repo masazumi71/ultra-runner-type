@@ -43,7 +43,7 @@ footer{margin-top:36px;color:var(--muted);font-size:.82rem}
 </div>
 <div class="card"><h2>5軸プロファイル</h2><div id="bars"></div></div>
 <div class="card"><h2>結果の読み方</h2><p id="reading"></p></div>
-<div class="card"><h2>結果をシェア</h2><div id="shareText" class="share"></div><div class="actions"><button type="button" id="copy">結果をコピー</button></div><p id="copyStatus" class="small" aria-live="polite"></p></div>
+<div class="card"><h2>結果をシェア</h2><div id="shareText" class="share"></div><div class="actions"><button type="button" class="primary" id="share">シェアする</button><button type="button" id="copy">結果をコピー</button></div><p id="copyStatus" class="small" aria-live="polite"></p></div>
 </section>
 
 <footer>この診断は医学的・心理学的な診断ではなく、ウルトラランニングへの動機を整理するための自己評価モデルです。</footer>
@@ -107,6 +107,34 @@ document.getElementById('quiz').addEventListener('submit',e=>{
  document.getElementById('shareText').textContent=txt;document.getElementById('results').style.display='block';document.getElementById('results').scrollIntoView({behavior:'smooth'});
 });
 document.getElementById('reset').onclick=()=>{document.getElementById('quiz').reset();document.getElementById('results').style.display='none';document.getElementById('error').textContent='';scrollTo({top:0,behavior:'smooth'})};
+
+document.getElementById('share').onclick=async()=>{
+  const resultText=document.getElementById('shareText').textContent;
+  const url=location.href.split('#')[0];
+  const shareData={
+    title:'ウルトラランナー動機タイプ診断',
+    text:resultText,
+    url:url
+  };
+  if(navigator.share){
+    try{
+      await navigator.share(shareData);
+      document.getElementById('copyStatus').textContent='';
+    }catch(err){
+      if(err && err.name!=='AbortError'){
+        document.getElementById('copyStatus').textContent='共有できませんでした。結果をコピーして共有してください。';
+      }
+    }
+  }else{
+    try{
+      await navigator.clipboard.writeText(resultText+'\n'+url);
+      document.getElementById('copyStatus').textContent='共有用の結果とURLをコピーしました。';
+    }catch{
+      document.getElementById('copyStatus').textContent='このブラウザでは共有機能を利用できません。結果を選択してコピーしてください。';
+    }
+  }
+};
+
 document.getElementById('copy').onclick=async()=>{let t=document.getElementById('shareText').textContent;try{await navigator.clipboard.writeText(t);document.getElementById('copyStatus').textContent='コピーしました。'}catch{document.getElementById('copyStatus').textContent='ブラウザのコピー機能で選択してコピーしてください。'}};
 </script>
 </body></html>
