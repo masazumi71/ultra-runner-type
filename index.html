@@ -46,29 +46,29 @@ footer{margin-top:36px;color:var(--muted);font-size:.82rem}
 <div class="card"><h2>結果をシェア</h2><div id="shareText" class="share"></div><div class="actions"><button type="button" class="primary" id="share">シェアする</button><button type="button" id="copy">結果をコピー</button></div><p id="copyStatus" class="small" aria-live="polite"></p></div>
 </section>
 
-<footer>この診断は医学的・心理学的な診断ではなく、ウルトラランニングへの動機を整理するための自己評価モデルです。</footer>
+<footer>※精度もへったくれもないお遊び診断です。科学的・心理学的に検証された尺度ではないので、結果は真に受けず「自分はこんな感じかも」くらいで楽しんでください。</footer>
 </main>
 <script>
 const Q=[
 ['Performance','レースでは、完走そのものより自分の能力をどこまで発揮できたかを重視する。'],
 ['Puzzle','レース前に、ペース・補給・装備・気象条件を組み合わせて戦略を考えることが楽しい。'],
-['Community','大会で知人や仲間に会うことは、参加する楽しみの重要な一部である。'],
-['Adventure','順位やタイムを狙えなくても、未知の土地を長時間移動できるならそのレースに強く惹かれる。'],
-['Narrative','ウルトラを通じて、自分がどんな人間なのかを理解したいと思うことが多い。'],
+['Community','大会を選ぶとき、仲間と体験を共有できることは重要な要素になる。'],
+['Adventure','順位やタイムを狙いにくくなっても、未知の土地や探索性の高いレースを選びたいと思う。'],
+['Narrative','ウルトラでの経験は、自分がどんな人間かという感覚と強く結びついている。'],
 ['Performance','完走できても、自分の実力に比べて遅いレースなら満足度は低い。'],
 ['Puzzle','失速やDNFの後は、精神論より原因を具体的な変数に分解して考える。'],
-['Community','一人で同じコースを走るより、大会という共同体の中で走ることに価値を感じる。'],
-['Adventure','レースとして完成されていることより、辺境性や探索感の強さを優先することがある。'],
-['Narrative','困難を乗り越える経験には、人を成長させる特別な意味があると思う。'],
+['Community','条件が同じなら、知人や仲間の多い大会を選びやすい。'],
+['Adventure','十分に攻略できる既知のコースより、結果の読みにくい未知のコースに惹かれることがある。'],
+['Narrative','レースでの困難や成功を、自分自身の成長の物語として捉えることが多い。'],
 ['Performance','トレーニングで最も嬉しいのは、走力が上がっていると確認できたときだ。'],
 ['Puzzle','レース中に状況を見て戦略を修正し、それが機能すると強い満足感がある。'],
-['Community','クルー、ペーサー、ボランティアとの関係は、レース結果と独立した価値を持つと思う。'],
-['Adventure','整備された有名レースより、競技性が多少低くても未知性の高いイベントを選びたいことがある。'],
+['Community','クルーやペーサー、仲間との交流がなくなると、その大会の魅力はかなり下がると思う。'],
+['Adventure','競技としての完成度が多少下がっても、辺境性や探索感の強いイベントを選びたいことがある。'],
 ['Narrative','ウルトラでの成功や失敗を、自分の人生の節目として考えることが多い。'],
-['Performance','同年代や同程度の実力の選手との比較は、自分の状態を判断する重要な材料になる。'],
-['Puzzle','ウルトラは、自分の持つ能力や資源をどう配分するかというゲームに近いと感じる。'],
-['Community','もし大会で誰とも交流できないとしても、参加意欲はかなり変わらない。','reverse'],
-['Adventure','同じ競技的価値なら、未知のコースより自分が攻略しやすいコースを選ぶことが多い。','reverse'],
+['Performance','景観や知名度が同程度なら、自分の競技力を試しやすいレースを選びたい。'],
+['Puzzle','レース後に、うまくいった判断や失敗した判断を分析して次に修正するのが楽しい。'],
+['Community','大会でほとんど誰とも交流できなくても、満足度はあまり変わらない。','reverse'],
+['Adventure','知らない場所を走ること自体は、レース選びにそれほど影響しない。','reverse'],
 ['Narrative','レースを特別な人生物語として説明する必要はあまり感じない。','reverse']
 ];
 const L=['全く当てはまらない','あまり当てはまらない','どちらともいえない','やや当てはまる','とても当てはまる'];
@@ -86,10 +86,16 @@ Q.forEach((q,i)=>{
  L.forEach((t,j)=>{let l=document.createElement('label');l.className='choice';l.innerHTML=`<input type="radio" name="q${i}" value="${j+1}"><span>${t}</span>`;r.append(l)});f.append(r);qs.append(f);
 });
 function classify(r){
- const [a,b,c]=r, spread=r[0][1]-r[4][1], g1=a[1]-b[1], g2=b[1]-c[1];
+ const [a,b,c]=r, spread=r[0][1]-r[4][1];
  if(spread<=15)return['バランス型','5つの動機が比較的均等で、特定の意味づけに強く偏らないタイプです。'];
- if(g1<=5&&g2<=5&&c[1]>=55)return[`${a[0]}・${b[0]}・${c[0]}複合型`,'3つの動機がほぼ同程度に強い複合型です。'];
- if(g1<=8&&a[1]>=60&&b[1]>=60)return[`${a[0]}–${b[0]}型`,`${a[0]}と${b[0]}が明確な中心です。 ${info[a[0]]} ${info[b[0]]}`];
+ if(a[1]-b[1]<=6 && b[1]-c[1]<=6 && c[1]>=62){
+   const names=[a[0],b[0],c[0]].sort((x,y)=>['Performance','Puzzle','Community','Adventure','Narrative'].indexOf(x)-['Performance','Puzzle','Community','Adventure','Narrative'].indexOf(y));
+   return[`${names.join('–')}型`,'3つの動機がいずれも強く、単一タイプでは説明しにくい複合型です。'];
+ }
+ if(a[1]-b[1]<=13 && b[1]>=62){
+   const names=[a[0],b[0]].sort((x,y)=>['Performance','Puzzle','Community','Adventure','Narrative'].indexOf(x)-['Performance','Puzzle','Community','Adventure','Narrative'].indexOf(y));
+   return[`${names.join('–')}型`,`${a[0]}と${b[0]}の両方が明確に強い複合型です。 ${info[a[0]]} ${info[b[0]]}`];
+ }
  return[`${a[0]}型`,info[a[0]]];
 }
 document.getElementById('quiz').addEventListener('submit',e=>{
@@ -98,11 +104,11 @@ document.getElementById('quiz').addEventListener('submit',e=>{
  if(miss.length){document.getElementById('error').textContent='未回答: '+miss.join(', ')+' 問目';return}
  document.getElementById('error').textContent='';
  let p={};Object.keys(s).forEach(k=>p[k]=Math.round(((s[k]-n[k])/(n[k]*4))*100));
- let r=Object.entries(p).sort((a,b)=>b[1]-a[1]),cl=classify(r);
+ let r=Object.entries(p).sort((a,b)=>b[1]-a[1] || a[0].localeCompare(b[0])),cl=classify(r);
  document.getElementById('typeName').textContent=cl[0];document.getElementById('typeSummary').textContent=cl[1];
  let bars=document.getElementById('bars');bars.innerHTML='';
  r.forEach(([k,v])=>{bars.insertAdjacentHTML('beforeend',`<div class="barrow"><div class="barhead"><b>${k}</b><span>${v}%</span></div><div class="track"><div class="fill" style="width:${v}%"></div></div></div>`)});
- document.getElementById('reading').textContent=`最も強い軸は ${r[0][0]}、次いで ${r[1][0]}。最も低い軸は ${r[4][0]} です。Adventureは単に山や景色が好きかではなく、競技性を犠牲にしてでも未知性や探索性を選ぶ程度を、Narrativeは苦しい経験の有無ではなく、それを自己物語として意味づける程度を重視しています。`;
+ document.getElementById('reading').textContent=`最も強い軸は ${r[0][0]}、次いで ${r[1][0]}。最も低い軸は ${r[4][0]} です。Adventureは単に山や景色が好きかではなく、競技性や予測可能性と引き換えにしてでも未知性や探索性を選ぶ程度を重視しています。Communityも単に仲間を好意的に見るかではなく、レース選択や満足度にどの程度影響するかを見ています。Narrativeは苦しい経験の有無ではなく、それを自己物語として意味づける程度を測っています。`;
  let txt=`ウルトラランナー動機タイプ診断：${cl[0]}\n`+r.map(x=>`${x[0]} ${x[1]}%`).join(' / ')+'\n#ウルトラランナー動機タイプ診断';
  document.getElementById('shareText').textContent=txt;document.getElementById('results').style.display='block';document.getElementById('results').scrollIntoView({behavior:'smooth'});
 });
