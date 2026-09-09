@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ウルトラランナー動機タイプ診断</title>
+<meta name="description" content="ウルトラトレイルを何として楽しんでいるかを、Performance / Puzzle / Community / Adventure / Narrative の5軸で診断します。">
+<meta property="og:title" content="ウルトラランナー動機タイプ診断">
+<meta property="og:description" content="あなたにとってウルトラは競技？ パズル？ コミュニティ？ 冒険？ それとも物語？ 20問で5軸プロファイルを診断。">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--text:#17202a;--muted:#65717e;--line:#dce1e6;--accent:#244d67;--soft:#e8eff3}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif;line-height:1.6}
+main{max-width:900px;margin:auto;padding:32px 18px 64px}header{margin-bottom:28px}h1{font-size:clamp(1.7rem,5vw,2.5rem);line-height:1.2;margin:.2em 0}.lead{color:var(--muted);max-width:760px}
+.card,fieldset{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 16px}legend{font-weight:650;padding:0 6px}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}.choice{display:flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;font-size:.86rem;min-height:52px}.choice:has(input:checked){border-color:var(--accent);background:var(--soft)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}button{font:inherit;border-radius:10px;padding:11px 18px;border:1px solid var(--line);cursor:pointer;background:white}.primary{background:var(--accent);color:white;border-color:var(--accent)}
+#results{display:none;margin-top:34px}.type{font-size:1.7rem;font-weight:750;margin:.15em 0}.barrow{margin:14px 0}.barhead{display:flex;justify-content:space-between}.track{height:12px;background:#e5e8eb;border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--accent);border-radius:99px}.small{font-size:.9rem;color:var(--muted)}
+.share{white-space:pre-wrap;background:#f3f5f6;border-radius:10px;padding:12px;font-size:.9rem}
+footer{margin-top:36px;color:var(--muted);font-size:.82rem}
+@media(max-width:680px){.scale{grid-template-columns:1fr}.choice{min-height:44px}main{padding-top:22px}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<div class="small">ULTRA RUNNER MOTIVATION PROFILE</div>
+<h1>ウルトラランナー動機タイプ診断</h1>
+<p class="lead">あなたにとってウルトラトレイルは「競技」「攻略ゲーム」「コミュニティ」「冒険」「自己物語」のどれに近いでしょうか。20問から5軸の傾向を算出し、最後にタイプを判定します。</p>
+</header>
+
+<form id="quiz"><div id="questions"></div>
+<div class="actions"><button class="primary" type="submit">診断する</button><button type="button" id="reset">リセット</button></div>
+<p id="error" class="small" aria-live="polite"></p>
+</form>
+
+<section id="results">
+<div class="card">
+<div class="small">あなたのタイプ</div>
+<div id="typeName" class="type"></div>
+<div id="typeSummary"></div>
+</div>
+<div class="card"><h2>5軸プロファイル</h2><div id="bars"></div></div>
+<div class="card"><h2>結果の読み方</h2><p id="reading"></p></div>
+<div class="card"><h2>結果をシェア</h2><div id="shareText" class="share"></div><div class="actions"><button type="button" id="copy">結果をコピー</button></div><p id="copyStatus" class="small" aria-live="polite"></p></div>
+</section>
+
+<footer>この診断は医学的・心理学的な診断ではなく、ウルトラランニングへの動機を整理するための自己評価モデルです。</footer>
+</main>
+<script>
+const Q=[
+['Performance','レースでは、完走そのものより自分の能力をどこまで発揮できたかを重視する。'],
+['Puzzle','レース前に、ペース・補給・装備・気象条件を組み合わせて戦略を考えることが楽しい。'],
+['Community','大会で知人や仲間に会うことは、参加する楽しみの重要な一部である。'],
+['Adventure','順位やタイムを狙えなくても、未知の土地を長時間移動できるならそのレースに強く惹かれる。'],
+['Narrative','ウルトラを通じて、自分がどんな人間なのかを理解したいと思うことが多い。'],
+['Performance','完走できても、自分の実力に比べて遅いレースなら満足度は低い。'],
+['Puzzle','失速やDNFの後は、精神論より原因を具体的な変数に分解して考える。'],
+['Community','一人で同じコースを走るより、大会という共同体の中で走ることに価値を感じる。'],
+['Adventure','レースとして完成されていることより、辺境性や探索感の強さを優先することがある。'],
+['Narrative','困難を乗り越える経験には、人を成長させる特別な意味があると思う。'],
+['Performance','トレーニングで最も嬉しいのは、走力が上がっていると確認できたときだ。'],
+['Puzzle','レース中に状況を見て戦略を修正し、それが機能すると強い満足感がある。'],
+['Community','クルー、ペーサー、ボランティアとの関係は、レース結果と独立した価値を持つと思う。'],
+['Adventure','整備された有名レースより、競技性が多少低くても未知性の高いイベントを選びたいことがある。'],
+['Narrative','ウルトラでの成功や失敗を、自分の人生の節目として考えることが多い。'],
+['Performance','同年代や同程度の実力の選手との比較は、自分の状態を判断する重要な材料になる。'],
+['Puzzle','ウルトラは、自分の持つ能力や資源をどう配分するかというゲームに近いと感じる。'],
+['Community','もし大会で誰とも交流できないとしても、参加意欲はかなり変わらない。','reverse'],
+['Adventure','同じ競技的価値なら、未知のコースより自分が攻略しやすいコースを選ぶことが多い。','reverse'],
+['Narrative','レースを特別な人生物語として説明する必要はあまり感じない。','reverse']
+];
+const L=['全く当てはまらない','あまり当てはまらない','どちらともいえない','やや当てはまる','とても当てはまる'];
+const info={
+Performance:'順位・タイム・能力向上・競技としての完成度を強く重視します。',
+Puzzle:'ペース、補給、装備、地形、気象、身体状態を含む複雑な攻略と最適化を楽しみます。',
+Community:'仲間、大会文化、クルーやペーサーとの共有体験に大きな価値を感じます。',
+Adventure:'競技結果だけでなく、未知、探索、辺境性、非日常性そのものに強く惹かれます。',
+Narrative:'レースを人生、成長、自己理解、アイデンティティの物語として意味づける傾向があります。'
+};
+const qs=document.getElementById('questions');
+Q.forEach((q,i)=>{
+ let f=document.createElement('fieldset'); let g=document.createElement('legend'); g.textContent=(i+1)+'. '+q[1]; f.append(g);
+ let r=document.createElement('div');r.className='scale';
+ L.forEach((t,j)=>{let l=document.createElement('label');l.className='choice';l.innerHTML=`<input type="radio" name="q${i}" value="${j+1}"><span>${t}</span>`;r.append(l)});f.append(r);qs.append(f);
+});
+function classify(r){
+ const [a,b,c]=r, spread=r[0][1]-r[4][1], g1=a[1]-b[1], g2=b[1]-c[1];
+ if(spread<=15)return['バランス型','5つの動機が比較的均等で、特定の意味づけに強く偏らないタイプです。'];
+ if(g1<=5&&g2<=5&&c[1]>=55)return[`${a[0]}・${b[0]}・${c[0]}複合型`,'3つの動機がほぼ同程度に強い複合型です。'];
+ if(g1<=8&&a[1]>=60&&b[1]>=60)return[`${a[0]}–${b[0]}型`,`${a[0]}と${b[0]}が明確な中心です。 ${info[a[0]]} ${info[b[0]]}`];
+ return[`${a[0]}型`,info[a[0]]];
+}
+document.getElementById('quiz').addEventListener('submit',e=>{
+ e.preventDefault();let s={Performance:0,Puzzle:0,Community:0,Adventure:0,Narrative:0},n={...s},miss=[];
+ Q.forEach((q,i)=>{let x=document.querySelector(`input[name=q${i}]:checked`);if(!x){miss.push(i+1);return}let v=+x.value;if(q[2]==='reverse')v=6-v;s[q[0]]+=v;n[q[0]]++});
+ if(miss.length){document.getElementById('error').textContent='未回答: '+miss.join(', ')+' 問目';return}
+ document.getElementById('error').textContent='';
+ let p={};Object.keys(s).forEach(k=>p[k]=Math.round(((s[k]-n[k])/(n[k]*4))*100));
+ let r=Object.entries(p).sort((a,b)=>b[1]-a[1]),cl=classify(r);
+ document.getElementById('typeName').textContent=cl[0];document.getElementById('typeSummary').textContent=cl[1];
+ let bars=document.getElementById('bars');bars.innerHTML='';
+ r.forEach(([k,v])=>{bars.insertAdjacentHTML('beforeend',`<div class="barrow"><div class="barhead"><b>${k}</b><span>${v}%</span></div><div class="track"><div class="fill" style="width:${v}%"></div></div></div>`)});
+ document.getElementById('reading').textContent=`最も強い軸は ${r[0][0]}、次いで ${r[1][0]}。最も低い軸は ${r[4][0]} です。Adventureは単に山や景色が好きかではなく、競技性を犠牲にしてでも未知性や探索性を選ぶ程度を、Narrativeは苦しい経験の有無ではなく、それを自己物語として意味づける程度を重視しています。`;
+ let txt=`ウルトラランナー動機タイプ診断：${cl[0]}\n`+r.map(x=>`${x[0]} ${x[1]}%`).join(' / ')+'\n#ウルトラランナー動機タイプ診断';
+ document.getElementById('shareText').textContent=txt;document.getElementById('results').style.display='block';document.getElementById('results').scrollIntoView({behavior:'smooth'});
+});
+document.getElementById('reset').onclick=()=>{document.getElementById('quiz').reset();document.getElementById('results').style.display='none';document.getElementById('error').textContent='';scrollTo({top:0,behavior:'smooth'})};
+document.getElementById('copy').onclick=async()=>{let t=document.getElementById('shareText').textContent;try{await navigator.clipboard.writeText(t);document.getElementById('copyStatus').textContent='コピーしました。'}catch{document.getElementById('copyStatus').textContent='ブラウザのコピー機能で選択してコピーしてください。'}};
+</script>
+</body></html>
